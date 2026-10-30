@@ -184,6 +184,12 @@ function formatBytes(bytes: number) {
 const prettyStatus = (status: string) => status.replace(/_/g, " ").toLowerCase();
 const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
 
+
+
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || ""
+).replace(/\/$/, "");
+
 async function api<T>(
   url: string,
   method = "GET",
@@ -191,9 +197,9 @@ async function api<T>(
   csrf?: string | null,
   extraHeaders: Record<string, string> = {},
 ): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     method,
-    credentials: "same-origin",
+    credentials: "include",
     headers: {
       ...(body ? { "Content-Type": "application/json" } : {}),
       ...(csrf ? { "X-CSRF-Token": csrf } : {}),
