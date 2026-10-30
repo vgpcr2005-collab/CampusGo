@@ -530,7 +530,7 @@ function App() {
     try {
       const nextDocument = await new Promise<UploadedDocument>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/documents");
+        xhr.open("POST", `${API_BASE_URL}/api/documents`);
         xhr.withCredentials = true;
         if (csrf) xhr.setRequestHeader("X-CSRF-Token", csrf);
         xhr.upload.onprogress = (event) => {
