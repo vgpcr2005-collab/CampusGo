@@ -1,0 +1,382 @@
+{
+  "schema": "clarification-questions/v1",
+  "generated_at": "2026-10-28T17:06:48Z",
+  "user_input": "Implement the requested frontend modernization directly in the existing workspace `c:\\campus go`: refactor the React frontend into a polished, cohesive, responsive CampusGo student marketplace while preserving actual backend APIs, authentication, payment, business behavior, and only existing authorized role-specific features. Inspect current frontend and backend API surfaces, existing UI/CSS and manifests before editing; do not fabricate shops or features. Improve navigation/pages, forms, cards, states, tracking, and reduced-motion behavior as requested. Keep changes frontend-focused, do not commit, and run frontend build plus backend tests; iterate on failures. Return precise changed-file list and validation results. No assessment or planning phase.",
+  "title": "CampusGo frontend modernization",
+  "assessment_snapshot": {
+    "intro": "The workspace contains a React frontend and a Python backend; the requested scope is a frontend modernization with backend contracts preserved.",
+    "bullets": [
+      "The project contains approximately 4,220 nonblank source lines across JavaScript/TypeScript and Python.",
+      "The user requires preservation of actual backend APIs, authentication, payments, business behavior, and role-specific access.",
+      "No screenshots or externally linked design-system source were supplied in the request."
+    ]
+  },
+  "proposed_outcome": "Polish the existing React marketplace UI while retaining its current routes, API integrations, authentication and payment behavior, authorized role-specific features, and responsive/reduced-motion accessibility; avoid fabricated marketplace data or functionality.",
+  "scope": [
+    "frontend",
+    "generic"
+  ],
+  "status": "answered",
+  "questions": [
+    {
+      "id": "F1",
+      "kit": "frontend",
+      "field": "target.framework",
+      "title": "Target framework",
+      "question": "Confirm the frontend framework and version to retain for this modernization.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "React (existing project version)",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "React (existing project version)",
+      "answer": {
+        "value": "React (existing project version)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "React (existing project version)",
+          "label": "React (existing project version)"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F2",
+      "kit": "frontend",
+      "field": "target.component_library",
+      "title": "Component library",
+      "question": "Which component/UI library should the refreshed frontend use? You may choose to retain the project's existing component and CSS approach rather than add a library.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "Retain existing project components and CSS; add no UI library",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Retain existing project components and CSS; add no UI library",
+      "answer": {
+        "value": "Retain existing project components and CSS; add no UI library",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Retain existing project components and CSS; add no UI library",
+          "label": "Retain existing project components and CSS; add no UI library"
+        },
+        {
+          "value": "MUI",
+          "label": "MUI"
+        },
+        {
+          "value": "shadcn/ui",
+          "label": "shadcn/ui"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F3",
+      "kit": "frontend",
+      "field": "visual.screenshots",
+      "title": "Current UI references",
+      "question": "Provide screenshot/screen-recording paths or URLs for the current UI, or confirm that the implementation should use the existing frontend itself as its visual reference.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Use the existing frontend UI/CSS in the workspace as the reference; no screenshot files supplied.",
+      "answer": {
+        "value": "Use the existing frontend UI/CSS in the workspace as the reference; no screenshot files supplied.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F4",
+      "kit": "frontend",
+      "field": "visual.design_system",
+      "title": "Design system",
+      "question": "Specify the design-system/tokens source, or confirm the default: retain and refine existing CSS custom properties and visual language.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": "match existing pixel-by-pixel using extracted CSS custom properties",
+      "prefilled": true,
+      "prefilled_value": "Refine the existing CSS/custom properties into a cohesive, polished CampusGo visual system without replacing existing branding or inventing features.",
+      "answer": {
+        "value": "Refine the existing CSS/custom properties into a cohesive, polished CampusGo visual system without replacing existing branding or inventing features.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F5",
+      "kit": "frontend",
+      "field": "compliance.accessibility",
+      "title": "Accessibility target",
+      "question": "Which accessibility standard should the refreshed UI target?",
+      "importance": "recommended",
+      "impact": 4,
+      "recommended": "WCAG 2.1 AA",
+      "default": "WCAG 2.1 AA",
+      "prefilled": true,
+      "prefilled_value": "WCAG 2.1 AA (including reduced-motion behavior, keyboard focus, and accessible states)",
+      "answer": {
+        "value": "WCAG 2.1 AA (including reduced-motion behavior, keyboard focus, and accessible states)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "WCAG 2.1 AA",
+          "label": "WCAG 2.1 AA"
+        },
+        {
+          "value": "WCAG 2.2 AA",
+          "label": "WCAG 2.2 AA"
+        },
+        {
+          "value": "None / not required",
+          "label": "None / not required"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F6",
+      "kit": "frontend",
+      "field": "compatibility.browsers",
+      "title": "Browser targets",
+      "question": "Which browsers/runtime versions should be supported?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": "Modern evergreen browsers (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "default": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Modern evergreen browsers (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+          "label": "Modern evergreen browsers (Chrome, Firefox, Safari, Edge — latest 2 major versions)"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F7",
+      "kit": "frontend",
+      "field": "responsive.breakpoints",
+      "title": "Responsive strategy",
+      "question": "Which responsive/adaptive strategy should the UI follow?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "Mobile-first using existing breakpoints detected from codebase",
+      "default": "mobile-first using existing breakpoints detected from codebase",
+      "prefilled": true,
+      "prefilled_value": "Responsive across desktop, tablet, and mobile, with existing breakpoints retained where appropriate",
+      "answer": {
+        "value": "Responsive across desktop, tablet, and mobile, with existing breakpoints retained where appropriate",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Mobile-first using existing breakpoints detected from codebase",
+          "label": "Mobile-first using existing breakpoints detected from codebase"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F8",
+      "kit": "frontend",
+      "field": "i18n.locales",
+      "title": "Locales",
+      "question": "Which locales are in scope?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": null,
+      "default": "preserve current locales; keep existing i18n library if present",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": {
+        "value": "preserve current locales; keep existing i18n library if present",
+        "source": "default"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F9",
+      "kit": "frontend",
+      "field": "state_mgmt.preference",
+      "title": "State management",
+      "question": "State-management preference, if any?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": null,
+      "default": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "prefilled": true,
+      "prefilled_value": "Preserve existing data/state integrations and patterns; do not introduce backend behavior changes.",
+      "answer": {
+        "value": "Preserve existing data/state integrations and patterns; do not introduce backend behavior changes.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "F10",
+      "kit": "frontend",
+      "field": "routing.preference",
+      "title": "Routing preference",
+      "question": "Routing library/strategy preference, if any?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": null,
+      "default": "use the de-facto router for the chosen target framework",
+      "prefilled": true,
+      "prefilled_value": "Preserve existing routes and URL behavior.",
+      "answer": {
+        "value": "Preserve existing routes and URL behavior.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G1",
+      "kit": "generic",
+      "field": "success.definition",
+      "title": "Success criteria",
+      "question": "What defines completion?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": "feature parity with the current system; all existing user-facing behaviors preserved",
+      "prefilled": true,
+      "prefilled_value": "Deliver the requested frontend modernization while preserving actual backend APIs, authentication, payments, business behavior, and existing authorized role features; run the frontend build and backend tests.",
+      "answer": {
+        "value": "Deliver the requested frontend modernization while preserving actual backend APIs, authentication, payments, business behavior, and existing authorized role features; run the frontend build and backend tests.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G2",
+      "kit": "generic",
+      "field": "out_of_scope",
+      "title": "Out of scope",
+      "question": "List explicit exclusions.",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "no explicit exclusions; agent will infer from project structure",
+      "prefilled": true,
+      "prefilled_value": "Backend/API/business logic changes, invented shops or features, unauthorized role-specific actions, payment/auth changes, and commits.",
+      "answer": {
+        "value": "Backend/API/business logic changes, invented shops or features, unauthorized role-specific actions, payment/auth changes, and commits.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    },
+    {
+      "id": "G3",
+      "kit": "generic",
+      "field": "existing_tests.posture",
+      "title": "Test policy",
+      "question": "What is the must-pass policy for existing tests?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "must pass",
+      "default": "must pass",
+      "prefilled": true,
+      "prefilled_value": "Frontend build and backend tests must pass, as explicitly requested.",
+      "answer": {
+        "value": "Frontend build and backend tests must pass, as explicitly requested.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must pass",
+          "label": "must pass"
+        },
+        {
+          "value": "can rewrite",
+          "label": "can rewrite"
+        },
+        {
+          "value": "ignore",
+          "label": "ignore"
+        },
+        {
+          "value": "partial: frontend build and backend tests must pass",
+          "label": "partial: frontend build and backend tests must pass"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G5",
+      "kit": "generic",
+      "field": "constraints.additional",
+      "title": "Additional constraints",
+      "question": "Any additional constraints, dependencies, or operational/compliance rules?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": null,
+      "default": "None beyond the decisions listed in this specification.",
+      "prefilled": true,
+      "prefilled_value": "Do not commit. Return exact changed-file list and validation results. No assessment or planning phase.",
+      "answer": {
+        "value": "Do not commit. Return exact changed-file list and validation results. No assessment or planning phase.",
+        "source": "user"
+      },
+      "depends_on": null,
+      "type": "text",
+      "options": []
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+## [t4] Modernized the responsive CampusGo frontend
+- Codebase/domain discoveries: The existing React app is a single `App.tsx` with one CSS file; backend behavior includes CSRF-protected session auth, a dynamic catalog/pricing config, private PDF uploads, QR payment verification, customer/runner order views, and guarded status transitions. Delivery history is supplied by the backend and should remain the source of truth for tracking.
+- Wrong assumptions and corrections: Initial test commands from the workspace root did not target the nested manifests/test module (`npm run build` found no root package; `python -m unittest -v` discovered zero tests). Correct commands were `npm --prefix frontend run build` and running `python -m unittest -v test_app` from `backend/`.
+- Debugging dead-ends and what actually worked: Vite build and the backend suite completed successfully after using project-specific working directories/manifest paths.
+- Techniques/patterns worth reusing: Keep the UI dependency-light by refining existing CSS; use backend-provided order history for tracking; make modal keyboard handling trap focus and restore it after close; provide a recoverable bootstrap error rather than rendering an empty-looking storefront.
+- Learnings consumed: [(none)]

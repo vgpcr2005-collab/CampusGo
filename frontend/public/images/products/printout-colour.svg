@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#fbf8ef"/><stop offset="1" stop-color="#eef4ea"/></linearGradient>
+    <linearGradient id="printer" x2=".8" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dce3dd"/></linearGradient>
+    <filter id="shadow" x="-.3" y="-.3" width="1.7" height="1.8"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <rect width="600" height="600" rx="38" fill="url(#bg)"/>
+  <circle cx="300" cy="276" r="208" fill="#fff" opacity=".5"/>
+  <ellipse cx="300" cy="495" rx="176" ry="24" fill="#68786d" opacity=".16" filter="url(#shadow)"/>
+  <g transform="translate(66 58)">
+    <path d="M157 111h247l-25 151H147z" fill="#fff" stroke="#d5ddd6" stroke-width="4"/>
+    <rect x="177" y="132" width="185" height="100" rx="5" fill="#fff"/>
+    <path d="M195 212h24v-34h-24z" fill="#62a989"/><path d="M229 212h24v-55h-24z" fill="#edc95e"/><path d="M263 212h24v-44h-24z" fill="#e8896e"/><path d="M297 212h24v-70h-24z" fill="#7fa7c9"/>
+    <path d="M194 145h152M194 153h75" stroke="#b4beb7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M90 231 124 178h306l35 53v185H90z" fill="url(#printer)" stroke="#cbd4cd" stroke-width="4"/>
+    <path d="M124 178h306l35 53H90z" fill="#e8ede9" stroke="#d3dbd4" stroke-width="4"/>
+    <path d="M122 271h307v116H122z" fill="#f9fbf9" stroke="#d5ddd6" stroke-width="3"/>
+    <path d="M151 296h207M151 311h228M151 326h202" stroke="#b5beb7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M152 358h30v-22h-30z" fill="#65aa8d"/><path d="M190 358h30v-34h-30z" fill="#eacb65"/><path d="M228 358h30v-27h-30z" fill="#e99078"/><path d="M266 358h30v-42h-30z" fill="#82a8ca"/>
+    <rect x="367" y="252" width="47" height="18" rx="8" fill="#31483a"/>
+    <circle cx="380" cy="261" r="3" fill="#74ce91"/><circle cx="396" cy="261" r="3" fill="#efc663"/>
+    <path d="M157 404h239l-32 31H189z" fill="#d1d9d2"/>
+  </g>
+</svg>

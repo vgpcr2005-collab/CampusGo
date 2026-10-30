@@ -1,0 +1,9 @@
+.venv/
+.env
+__pycache__/
+*.py[cod]
+backend/instance/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/tsconfig.tsbuildinfo

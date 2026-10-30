@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f8f8ef"/><stop offset="1" stop-color="#eaf1e7"/></linearGradient>
+    <linearGradient id="paper" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e6ece7"/></linearGradient>
+    <linearGradient id="folder" x2=".8" y2="1"><stop stop-color="#7fa78f"/><stop offset="1" stop-color="#507c63"/></linearGradient>
+    <filter id="shadow" x="-.3" y="-.3" width="1.7" height="1.8"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <rect width="600" height="600" rx="38" fill="url(#bg)"/>
+  <circle cx="300" cy="276" r="210" fill="#fff" opacity=".52"/>
+  <ellipse cx="300" cy="480" rx="190" ry="26" fill="#52695a" opacity=".18" filter="url(#shadow)"/>
+  <g transform="rotate(-5 300 300)">
+    <path d="M130 213 126 186q-1-14 14-16l129-8 29 24 164-5q17 0 19 17l7 177-315 25q-16 1-18-15z" fill="url(#paper)" stroke="#d7dfd8" stroke-width="4"/>
+    <path d="M125 204 123 178q-1-15 14-16l129-8 30 24 163-4q17 0 19 17l7 178-315 24q-16 1-18-15z" fill="url(#folder)" stroke="#426f57" stroke-width="5" stroke-linejoin="round"/>
+    <path d="m160 204 254-17 1 31-253 17z" fill="#f7faf6" stroke="#d7dfd8" stroke-width="3"/>
+    <path d="m125 227 343-24 9 137q1 14-14 16l-286 22q-17 1-19-15z" fill="url(#folder)" stroke="#426f57" stroke-width="5" stroke-linejoin="round"/>
+    <path d="m365 208 66-4 3 35q1 9-8 10l-55 4q-9 1-10-8z" fill="#e9ce76" stroke="#c9aa4d" stroke-width="4"/>
+    <path d="m133 240 321-23M132 367q8 11 19 10l299-23" fill="none" stroke="#a8c8b3" stroke-width="4" opacity=".7"/>
+    <path d="m125 367 2 17q2 15 18 14l287-22q15-1 14-16" fill="none" stroke="#3d694f" stroke-width="5"/>
+  </g>
+</svg>

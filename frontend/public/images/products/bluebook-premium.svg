@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#faf7ec"/><stop offset="1" stop-color="#edf3e8"/></linearGradient>
+    <linearGradient id="cover" x2=".8" y2="1"><stop stop-color="#3979ad"/><stop offset="1" stop-color="#1f507f"/></linearGradient>
+    <linearGradient id="page" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#edf0eb"/></linearGradient>
+    <filter id="shadow" x="-.3" y="-.3" width="1.7" height="1.8"><feGaussianBlur stdDeviation="13"/></filter>
+  </defs>
+  <rect width="600" height="600" rx="38" fill="url(#bg)"/>
+  <circle cx="300" cy="278" r="208" fill="#fff" opacity=".52"/>
+  <ellipse cx="306" cy="485" rx="174" ry="26" fill="#5f6e67" opacity=".2" filter="url(#shadow)"/>
+  <g transform="rotate(6 300 300)">
+    <path d="M157 158h140v294H157z" fill="url(#cover)" stroke="#234f75" stroke-width="4"/>
+    <path d="M298 158h155v294H298z" fill="url(#page)" stroke="#d4dcd5" stroke-width="4"/>
+    <path d="M310 187h124M310 209h124M310 231h124M310 253h124M310 275h124M310 297h124M310 319h124M310 341h124M310 363h124M310 385h124M310 407h124" stroke="#a9c5d9" stroke-width="3"/>
+    <path d="M315 175v254" stroke="#e0a59a" stroke-width="3"/>
+    <path d="M169 174h116v78H169z" fill="#f5f1dc" stroke="#d7cfae" stroke-width="3"/>
+    <path d="M184 194h85M184 211h69M184 228h78" stroke="#9b9b86" stroke-width="4" stroke-linecap="round"/>
+    <path d="M157 158h18v294h-18z" fill="#2c6190"/>
+    <path d="M298 158v294" stroke="#c0c9c1" stroke-width="4"/>
+    <path d="M175 166h106" stroke="#fff" stroke-width="4" opacity=".3"/>
+  </g>
+</svg>

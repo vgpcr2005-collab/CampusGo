@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f7f9f1"/><stop offset="1" stop-color="#edf2e8"/></linearGradient>
+    <linearGradient id="cover" x2=".9" y2="1"><stop stop-color="#4f8bc1"/><stop offset="1" stop-color="#28659d"/></linearGradient>
+    <linearGradient id="pages" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e8edf1"/></linearGradient>
+    <filter id="shadow" x="-.3" y="-.3" width="1.7" height="1.8"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <rect width="600" height="600" rx="38" fill="url(#bg)"/>
+  <circle cx="300" cy="280" r="212" fill="#fff" opacity=".5"/>
+  <ellipse cx="304" cy="487" rx="171" ry="25" fill="#5d7180" opacity=".2" filter="url(#shadow)"/>
+  <g transform="rotate(-8 300 300)">
+    <path d="M154 142h258q17 0 17 17v286q0 17-17 17H154z" fill="url(#cover)" stroke="#215985" stroke-width="5"/>
+    <path d="M171 159h224q13 0 13 13v249q0 13-13 13H171z" fill="url(#pages)" stroke="#d9e0e4" stroke-width="3"/>
+    <path d="M174 164h-18v291h18" fill="#dbe4e9"/>
+    <path d="M195 197h191M195 220h191M195 243h191M195 266h191M195 289h191M195 312h191M195 335h191M195 358h191M195 381h191M195 404h191" stroke="#9fc1dd" stroke-width="3"/>
+    <path d="M220 183v251" stroke="#de9a90" stroke-width="3"/>
+    <path d="M153 142h20v320h-20z" fill="#3475ad"/>
+    <path d="M181 175h207" stroke="#fff" stroke-width="4" opacity=".38"/>
+  </g>
+  <path d="M156 467c89 16 188 17 293 0" fill="none" stroke="#d7e3d8" stroke-width="3"/>
+</svg>
