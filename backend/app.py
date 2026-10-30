@@ -139,7 +139,7 @@ CORS(
     app,
     origins=["https://campusgo-frontend-xpwd.onrender.com"],
     supports_credentials=True,
-    allow_headers=["Content-Type", "X-CSRF-Token"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "X-Idempotency-Key"],
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 )
 app.config.update(

@@ -240,6 +240,27 @@ class CampusGoApiTests(unittest.TestCase):
         )
         return response
 
+    def test_cross_origin_checkout_preflight_allows_idempotency_header(self):
+        response = self.customer.options(
+            "/api/orders",
+            headers={
+                "Origin": "https://campusgo-frontend-xpwd.onrender.com",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": (
+                    "content-type,x-csrf-token,x-idempotency-key"
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers["Access-Control-Allow-Origin"],
+            "https://campusgo-frontend-xpwd.onrender.com",
+        )
+        self.assertEqual(response.headers["Access-Control-Allow-Credentials"], "true")
+        allowed_headers = response.headers["Access-Control-Allow-Headers"].lower()
+        self.assertIn("x-idempotency-key", allowed_headers)
+
     def test_bluebook_variants_have_distinct_prices_and_delivery_fees(self):
         basic = self.product("Bluebook — Basic")
         premium = self.product("Bluebook — Premium")

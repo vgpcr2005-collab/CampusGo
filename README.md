@@ -104,33 +104,35 @@ Customers can choose all pages or a non-repeating page range such as `1-3,5`, co
 
 Unattached uploads can be replaced or removed by their owner. Keep the private document directory out of static/web server roots and define an operational retention and backup policy before using real student documents.
 
-## Razorpay QR payment configuration
+## Razorpay payments
 
-The customer checkout creates a fixed-amount, single-use Razorpay UPI QR code for the server-calculated order total. Customers scan it with a UPI app; the order stays private and unavailable to runners until payment capture is verified. QR codes expire within two hours and can be regenerated from Order activity. The older Standard Checkout API endpoints remain available for existing integrations.
+Customer checkout uses Razorpay Standard Checkout. The backend creates an order for the server-calculated total; the browser opens Razorpay's secure payment dialog for UPI, cards, net banking, and wallets. The order remains unavailable to runners until the backend verifies the payment signature and confirms the captured payment with Razorpay. Failed, cancelled, or unverified payments never release an order.
 
 | Environment variable | Purpose |
 | --- | --- |
 | `FLASK_SECRET_KEY` | Random, private Flask session-signing key. |
+| `COOKIE_SECURE` | Set to `true` for HTTPS deployments such as Render. |
 | `RAZORPAY_MODE` | `test` by default; `live` requires a matching `rzp_live_...` key ID. |
 | `RAZORPAY_KEY_ID` | Razorpay Dashboard API key ID; `rzp_test_...` for test mode. This public key ID is returned to Checkout. |
 | `RAZORPAY_KEY_SECRET` | Private Razorpay API secret; server only. Never put it in Vite variables or frontend code. |
 | `RAZORPAY_WEBHOOK_SECRET` | Secret configured for the Razorpay webhook endpoint. |
-| `RAZORPAY_QR_ENABLED` | `false` by default. Set to `true` only after Razorpay enables QR Code API access for the merchant account. |
 | `RAZORPAY_ROUTE_ENABLED` | `false` by default. Set true only after Route capability and linked accounts are approved and configured. |
 | `RAZORPAY_SHOP_LINKED_ACCOUNT_ID` | Approved shop Route linked-account ID (`acc_...`). |
 | `CAMPUSGO_ADMIN_TOKEN` | Private token for read-only reconciliation and mapping runner IDs to approved Route accounts. |
 
-Use the provided `.env.example` as the variable-name template. The `.env` file is git-ignored. Do not share production or test API secrets. Razorpay documents QR Codes as an on-demand feature; request QR Code API activation from Razorpay before setting `RAZORPAY_QR_ENABLED=true`. When keys are missing, mismatched, or QR support is not enabled, QR checkout is disabled with an explicit configuration message; the app never simulates success.
+For a split Render deployment, set `VITE_API_BASE_URL` on the frontend service to the backend's HTTPS origin (for example, `https://campusgo-8hkr.onrender.com`) and redeploy the frontend. Set Razorpay keys, `RAZORPAY_MODE`, `FLASK_SECRET_KEY`, and `COOKIE_SECURE=true` on the backend service. Generate a strong, unique Flask secret and keep `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` exclusively on the backend. The backend CORS allowlist must match the deployed frontend origin. The local `.env` is git-ignored; never commit secrets.
+
+The older UPI QR endpoints remain available for compatibility but are not used by the customer checkout. They require Razorpay QR Code API access and `RAZORPAY_QR_ENABLED=true`.
 
 ### Webhooks and verification
 
-Configure these webhook events in the Razorpay Dashboard and set the matching `RAZORPAY_WEBHOOK_SECRET`: `payment.authorized`, `payment.captured`, `payment.failed`, `refund.created`, `refund.processed`, `refund.failed`, `refund.speed_changed`, `transfer.processed`, `transfer.failed`, and `transfer.reversed`. Point the webhook to `https://<your-host>/api/webhooks/razorpay`. Razorpay requires a publicly reachable endpoint for webhook delivery; localhost itself is not a valid webhook destination. The backend verifies the HMAC over the raw body and deduplicates by event ID and payload digest. QR payment capture is associated to the exact QR code and verified from Razorpay's API or signed webhook before the order is released. The authenticated `POST /api/orders/<id>/verify-qr-payment` endpoint checks Razorpay's QR payment list and payment entity; browser/client confirmation alone does not mark the order paid.
+Configure these webhook events in the Razorpay Dashboard and set the matching `RAZORPAY_WEBHOOK_SECRET`: `payment.authorized`, `payment.captured`, `payment.failed`, `refund.created`, `refund.processed`, `refund.failed`, `refund.speed_changed`, `transfer.processed`, `transfer.failed`, and `transfer.reversed`. Point the webhook to `https://<your-backend-host>/api/webhooks/razorpay`. Razorpay requires a publicly reachable endpoint for webhook delivery; localhost itself is not a valid webhook destination. The backend verifies the HMAC over the raw body and deduplicates by event ID and payload digest. The authenticated `POST /api/orders/<id>/verify-payment` endpoint checks the signature and confirms payment details with Razorpay's API; browser/client confirmation alone does not mark an order paid.
 
 In development, configure test mode and use Razorpay's documented test payment details. The local automated tests use an isolated fake gateway transport and do not make real payments. Test the customer payment flow in the Razorpay Test Mode Dashboard before enabling live keys.
 
 ### Razorpay Route eligibility and transfer configuration
 
-QR payment collection does not itself split a payment. This code only initiates Route transfers after a captured payment and only to exact linked-account IDs already supplied through server configuration / an admin mapping. The intended allocation remains item subtotal to the shop, delivery fee to the assigned runner, and platform fee retained by CampusGo. Gateway fees and tax are recorded separately and reduce the amount available for transfers; the app will leave a transfer pending/unavailable if the recipient amounts do not fit within captured proceeds after fees. Transfer statuses are changed to processed/failed only from verified Razorpay events.
+Payment collection does not itself split a payment. This code only initiates Route transfers after a captured payment and only to exact linked-account IDs already supplied through server configuration / an admin mapping. The intended allocation remains item subtotal to the shop, delivery fee to the assigned runner, and platform fee retained by CampusGo. Gateway fees and tax are recorded separately and reduce the amount available for transfers; the app will leave a transfer pending/unavailable if the recipient amounts do not fit within captured proceeds after fees. Transfer statuses are changed to processed/failed only from verified Razorpay events.
 
 Route must be approved and enabled for the merchant account; the official requirements include business turnover/compliance checks and payer-payee transparency review. Linked accounts must be created and onboarded through Razorpay Dashboard/API and pass the documented 24-hour cooling period before transfers. The user-facing app intentionally does not collect arbitrary bank details or create linked accounts. Enable Route only after Razorpay confirms the feature for the account and all recipient linked accounts are approved.
 

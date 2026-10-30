@@ -24,6 +24,30 @@ import {
   Zap,
 } from "lucide-react";
 
+declare global {
+  interface Window {
+    Razorpay: new (options: {
+      key: string;
+      amount: number;
+      currency: string;
+      name: string;
+      description: string;
+      order_id: string;
+      handler: (response: {
+        razorpay_payment_id: string;
+        razorpay_order_id: string;
+        razorpay_signature: string;
+      }) => void;
+      modal?: {
+        ondismiss?: () => void;
+      };
+      theme?: { color: string };
+    }) => {
+      open: () => void;
+    };
+  }
+}
+
 type User = { id: number; name: string; email: string; available: boolean };
 type Product = {
   id: number;
@@ -47,6 +71,13 @@ type OrderItem = {
   duplex: number;
 };
 type OrderDocument = { original_filename: string; byte_size: number; page_count: number };
+type PaymentCheckout = {
+  key_id: string;
+  gateway_order_id: string;
+  amount_paise: number;
+  currency: string;
+  mode: string;
+};
 type Order = {
   id: number;
   customer_id: number;
@@ -212,6 +243,21 @@ async function api<T>(
   return data;
 }
 
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 function calculateCart(products: Product[], cart: Cart, pagesToPrint: number | null): CartTotals {
   let itemSubtotal = 0;
   let deliveryFee = 0;
@@ -250,6 +296,7 @@ function calculateCart(products: Product[], cart: Cart, pagesToPrint: number | n
     itemCount,
   };
 }
+
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -591,41 +638,81 @@ function App() {
     }
   };
 
-  const retryPayment = async (orderId: number) => {
-    setBusy(true);
-    setError("");
-    try {
-      await api<{ payment_qr: Order["qr_payment"] }>(
-        `/api/orders/${orderId}/payment-qr`,
-        "POST",
-        {},
-        csrf,
-      );
-      await refreshOrders();
-      setNotice("Order QR is ready. Scan it with a UPI app to pay.");
-    } catch (cause) {
-      setError((cause as Error).message);
-    } finally {
-      setBusy(false);
+  const openPaymentCheckout = async (order: Order, paymentCheckout: PaymentCheckout) => {
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      setError("Razorpay Checkout could not be loaded. Check your connection and try again.");
+      return;
     }
+
+    const checkout = new window.Razorpay({
+      key: paymentCheckout.key_id,
+      amount: paymentCheckout.amount_paise,
+      currency: paymentCheckout.currency,
+      name: "CampusGo",
+      description: `CampusGo order #${order.id}`,
+      order_id: paymentCheckout.gateway_order_id,
+      handler: async (response) => {
+        setBusy(true);
+        setError("");
+        try {
+          const result = await api<{ payment_status: string; message?: string }>(
+            `/api/orders/${order.id}/verify-payment`,
+            "POST",
+            {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            },
+            csrf,
+          );
+          setNotice(
+            result.payment_status === "captured"
+              ? "Payment verified by Razorpay. Your order is available for delivery."
+              : result.message || "Payment is still being verified. The order remains pending.",
+          );
+        } catch (cause) {
+          setError((cause as Error).message);
+        } finally {
+          try {
+            await refreshOrders();
+          } catch (cause) {
+            setError((cause as Error).message);
+          }
+          setBusy(false);
+        }
+      },
+      modal: {
+        ondismiss: async () => {
+          setBusy(true);
+          setError("");
+          try {
+            await api(`/api/orders/${order.id}/payment-cancelled`, "POST", {}, csrf);
+            await refreshOrders();
+            setNotice("Payment was cancelled. You can retry from Order activity.");
+          } catch (cause) {
+            setError((cause as Error).message);
+          } finally {
+            setBusy(false);
+          }
+        },
+      },
+      theme: { color: "#2f855d" },
+    });
+    checkout.open();
   };
 
-  const verifyQrPayment = async (orderId: number) => {
+  const retryPayment = async (order: Order) => {
     setBusy(true);
     setError("");
     try {
-      const result = await api<{ payment_status: string; message?: string }>(
-        `/api/orders/${orderId}/verify-qr-payment`,
+      const result = await api<{ payment_checkout: PaymentCheckout }>(
+        `/api/orders/${order.id}/payment`,
         "POST",
         {},
         csrf,
       );
-      setNotice(
-        result.payment_status === "captured"
-          ? "Payment verified by Razorpay. Your order is available for delivery."
-          : result.message || "Payment is not confirmed yet. We will keep checking for updates.",
-      );
-      await refreshOrders();
+      await openPaymentCheckout(order, result.payment_checkout);
     } catch (cause) {
       setError((cause as Error).message);
     } finally {
@@ -664,7 +751,7 @@ function App() {
       idempotencyKey.current ||= window.crypto.randomUUID();
       const result = await api<{
         order: Order;
-        payment_qr: Order["qr_payment"];
+        payment_checkout: PaymentCheckout | null;
         payment_error: string | null;
       }>("/api/orders", "POST", {
         items: Object.entries(cart)
@@ -682,7 +769,7 @@ function App() {
         document_id: hasPrintingOrder ? uploadedDocument?.id : undefined,
         destination,
         instructions,
-        payment_flow: "qr",
+        payment_flow: "checkout",
         expected_total_paise: currentTotals.total,
       }, csrf, { "X-Idempotency-Key": idempotencyKey.current });
       idempotencyKey.current = null;
@@ -694,11 +781,15 @@ function App() {
       setDoubleSided(false);
       await refreshOrders();
       navigateToView("orders");
-      if (!result.payment_qr && result.order.payment_status !== "captured") {
+      if (!result.payment_checkout && result.order.payment_status !== "captured") {
         setError(result.payment_error || "Payment setup is still pending. Retry from Order activity.");
         return;
       }
-      setNotice("Order QR is ready. Scan it with a UPI app to pay.");
+      if (result.payment_checkout) {
+        await openPaymentCheckout(result.order, result.payment_checkout);
+      } else {
+        setNotice("Payment verified by Razorpay. Your order is available for delivery.");
+      }
     } catch (cause) {
       setError((cause as Error).message);
     } finally {
@@ -1022,9 +1113,9 @@ function App() {
               <input id="order-notes" className="text-input" value={instructions} maxLength={300} onChange={(event) => setInstructions(event.target.value)} placeholder="e.g. Outside the CSE lab" />
               <div className="form-label payment-label">PAYMENT</div>
               <div className="payment-options">
-                <div className="payment-option chosen"><span className="radio-dot" /><span><b>UPI QR payment</b><small>Scan a unique, fixed-amount QR code for this order.</small></span></div>
+                <div className="payment-option chosen"><span className="radio-dot" /><span><b>Razorpay Secure Checkout</b><small>UPI · Credit and Debit Cards · Net Banking · Wallets</small></span></div>
               </div>
-              {!paymentConfig.qr_payment_configured && <div className="payment-config-error" role="alert">{paymentConfig.qr_payment_configuration_error || "Razorpay QR payments are not configured. Contact the CampusGo administrator."}</div>}
+              {!paymentConfig.payment_configured && <div className="payment-config-error" role="alert">{paymentConfig.configuration_error || "Razorpay payments are not configured. Contact the CampusGo administrator."}</div>}
               {paymentConfig.payment_mode === "test" && <div className="payment-mode-note">Razorpay test mode · no real payment will be taken.</div>}
               {paymentConfig.payment_configured && (!paymentConfig.route_enabled || !paymentConfig.route_shop_account_configured) && <div className="payment-mode-note">Marketplace transfers are not configured. Payment can be collected, but recipient settlement remains pending.</div>}
               <div className="price-breakdown">
@@ -1033,7 +1124,7 @@ function App() {
                 <div><span>Platform fee</span><b>{money(cartTotals.platformFee)}</b></div>
                 <div className="total-line"><span>Total</span><b key={`${cartCount}-${cartTotals.total}`}>{money(cartTotals.total)}</b></div>
               </div>
-              <button className="button button-dark checkout-button" onClick={submitOrder} disabled={busy || !paymentConfig.qr_payment_configured || uploadProgress !== null || cartCount === 0 || (hasPrintingOrder && (!uploadedDocument || pagesToPrint === null || Boolean(pageRangeError)))}>{busy ? "One moment…" : "Generate payment QR"} <ArrowRight size={16} /></button>
+              <button className="button button-dark checkout-button" onClick={submitOrder} disabled={busy || !paymentConfig.payment_configured || uploadProgress !== null || cartCount === 0 || (hasPrintingOrder && (!uploadedDocument || pagesToPrint === null || Boolean(pageRangeError)))}>{busy ? "One moment…" : "Pay Now"} <ArrowRight size={16} /></button>
               <div className="secure-note"><ShieldCheck size={14} /> Clear pricing. No surprise fees.</div>
               <div className="settlement-note"><b>How the total works</b><span>One delivery fee is charged per order. Printing is priced by page × copies. Your item subtotal, delivery fee, and CampusGo platform fee are shown separately above.</span></div>
             </aside> : <aside className="catalog-cart-preview">
@@ -1046,7 +1137,7 @@ function App() {
           {view === "orders" && user && (
             <section className="orders-section" data-reveal>
               <div className="section-heading compact"><div><div className="eyebrow">YOUR CAMPUS RUNS</div><h2>Order activity</h2></div><span className="live-tag"><span /> Updates every few seconds</span></div>
-              {orders.customer_orders.length ? <div className="orders-list">{orders.customer_orders.map((order) => <OrderCard key={order.id} order={order} mode="customer" onConfirm={() => action(`/api/orders/${order.id}/confirm`)} onPay={() => retryPayment(order.id)} onVerifyPayment={() => verifyQrPayment(order.id)} disabled={busy} />)}</div> : <div className="quiet-empty"><Package size={20} /><span>Your placed orders will show up here.</span></div>}
+              {orders.customer_orders.length ? <div className="orders-list">{orders.customer_orders.map((order) => <OrderCard key={order.id} order={order} mode="customer" onConfirm={() => action(`/api/orders/${order.id}/confirm`)} onPay={() => retryPayment(order)} disabled={busy} />)}</div> : <div className="quiet-empty"><Package size={20} /><span>Your placed orders will show up here.</span></div>}
             </section>
           )}
           {view === "orders" && !user && <section className="orders-guest">
@@ -1119,7 +1210,6 @@ function OrderCard({
   onNextStatus,
   onConfirm,
   onPay,
-  onVerifyPayment,
   disabled,
 }: {
   order: Order;
@@ -1128,7 +1218,6 @@ function OrderCard({
   onNextStatus?: () => void;
   onConfirm?: () => void;
   onPay?: () => void;
-  onVerifyPayment?: () => void;
   disabled: boolean;
 }) {
   const isComplete = order.status === "COMPLETED";
@@ -1159,16 +1248,9 @@ function OrderCard({
       {order.instructions && <div className="order-instructions">“{order.instructions}”</div>}
       {mode === "customer" && order.document && <a className="order-document-link" href={`/api/orders/${order.id}/document`}><FileText size={13} />{order.document.original_filename} · {order.document.page_count} pages <span>Download PDF</span></a>}
       <div className="order-meta"><span><Clock3 size={13} />{new Date(order.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span><span><Wallet size={13} />{money(order.delivery_fee_paise)} delivery fee</span>{order.runner_name && <span><GraduationCap size={14} />{order.runner_name}</span>}</div>
-      {mode === "customer" && <div className="payment-status"><ShieldCheck size={14} />{order.payment_status === "captured" ? "Payment verified by Razorpay" : order.payment_status === "authorized" ? "Payment authorized; waiting for capture confirmation" : order.payment_status === "failed" ? "Payment failed. This order is not yet confirmed." : order.payment_status === "cancelled" ? "Payment cancelled. This order is not yet confirmed." : order.payment_status === "refunded" || order.payment_status === "partially_refunded" ? "Payment refund update received from Razorpay." : "Payment pending verification"}</div>}
+      {mode === "customer" &&         <div className="payment-status"><ShieldCheck size={14} />{order.payment_status === "captured" ? "Payment verified by Razorpay" : order.payment_status === "authorized" ? "Payment authorized; waiting for capture confirmation" : order.payment_status === "failed" ? "Payment failed. This order is not yet confirmed." : order.payment_status === "cancelled" ? "Payment cancelled. This order is not yet confirmed." : order.payment_status === "refunded" || order.payment_status === "partially_refunded" ? "Payment refund update received from Razorpay." : "Payment pending verification"}</div>}
       {mode === "customer" && order.payment_status === "captured" && order.allocations.some((allocation) => ["route_unavailable", "linked_account_unavailable", "amount_unavailable_after_gateway_fees", "pending_verification"].includes(allocation.settlement_status)) && <div className="payment-status">Marketplace settlement is pending or unavailable for this account.</div>}
-      {mode === "customer" && order.payment_status !== "captured" && order.qr_payment && (
-        <div className="order-qr">
-          <img src={order.qr_payment.image_url} alt={`Payment QR for order ${order.id}`} referrerPolicy="no-referrer" />
-          <div><b>Scan to pay {money(order.total_paise)}</b><span>Single-use UPI QR · valid until {new Date(order.qr_payment.close_by * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span></div>
-          <button className="button button-green order-action" onClick={onVerifyPayment} disabled={disabled}>I've paid — verify <Check size={14} /></button>
-        </div>
-      )}
-      {mode === "customer" && order.status === "PAYMENT_PENDING" && order.payment_status !== "authorized" && !["refunded", "partially_refunded"].includes(order.payment_status) && (!order.qr_payment || order.qr_payment.close_by <= Math.floor(Date.now() / 1000)) && <button className="button button-dark order-action" onClick={onPay} disabled={disabled}>{order.qr_payment ? "Generate a new QR" : "Generate payment QR"} <ArrowRight size={15} /></button>}
+      {mode === "customer" && order.status === "PAYMENT_PENDING" && order.payment_status !== "authorized" && !["refunded", "partially_refunded"].includes(order.payment_status) && <button className="button button-dark order-action" onClick={onPay} disabled={disabled}>{["failed", "cancelled"].includes(order.payment_status) ? "Retry Payment" : "Pay Now"} <ArrowRight size={15} /></button>}
       {mode === "customer" && order.status === "DELIVERED" && <button className="button button-green order-action" onClick={onConfirm} disabled={disabled}>Confirm delivery <Check size={15} /></button>}
       {mode === "runner" && onNextStatus && nextLabel[order.status] && <button className="button button-dark order-action" onClick={onNextStatus} disabled={disabled}>{nextLabel[order.status]} <ArrowRight size={15} /></button>}
       {mode === "available" && <button className="button button-green order-action" onClick={onAccept} disabled={disabled}>Accept this run <ArrowRight size={15} /></button>}
