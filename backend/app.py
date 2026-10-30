@@ -16,6 +16,7 @@ from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request, send_file, send_from_directory, session
+from flask_cors import CORS
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -134,11 +135,18 @@ def parse_page_range(page_range, total_pages):
     return len(pages)
 
 app = Flask(__name__)
+CORS(
+    app,
+    origins=["https://campusgo-frontend-xpwd.onrender.com"],
+    supports_credentials=True,
+    allow_headers=["Content-Type", "X-CSRF-Token"],
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+)
 app.config.update(
     SECRET_KEY=os.environ.get("FLASK_SECRET_KEY", "local-dev-only-change-before-deploy"),
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "false").lower() == "true",
+    SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "true").lower() == "true",
     JSON_SORT_KEYS=False,
     MAX_CONTENT_LENGTH=MAX_DOCUMENT_BYTES + 64 * 1024,
 )
