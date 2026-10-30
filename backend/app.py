@@ -145,7 +145,7 @@ CORS(
 app.config.update(
     SECRET_KEY=os.environ.get("FLASK_SECRET_KEY", "local-dev-only-change-before-deploy"),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SAMESITE="None",
     SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "true").lower() == "true",
     JSON_SORT_KEYS=False,
     MAX_CONTENT_LENGTH=MAX_DOCUMENT_BYTES + 64 * 1024,
